@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0a1a3a;
+  color: white;
+  text-align: center;
+}
+
+.container {
+  margin-top: 80px;
+}
+
+input {
+  padding: 12px;
+  width: 70%;
+  margin: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  padding: 12px 20px;
+  background: #28a745;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="login">
+  <h2>🔐 Admin Login</h2>
+  <input type="password" id="password" placeholder="Enter password">
+  <br>
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- PANEL -->
+<div id="panel" class="hidden">
+  <h2>📦 Admin Panel</h2>
+
+  <input id="id" placeholder="Tracking ID (ABC123)">
+  <input id="status" placeholder="Status (In transit)">
+  <input id="location" placeholder="Location">
+  <input id="date" placeholder="Date">
+
+  <br>
+  <button onclick="create()">Create Shipment</button>
+</div>
+
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "express-logistics-793a0.firebaseapp.com",
+  databaseURL: "https://express-logistics-793a0-default-rtdb.firebaseio.com",
+  projectId: "express-logistics-793a0",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// 🔐 PASSWORD (CHANGE THIS)
+const ADMIN_PASSWORD = "12345";
+
+window.login = function () {
+  const pass = document.getElementById("password").value;
+
+  if (pass === ADMIN_PASSWORD) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+  } else {
+    alert("Wrong password");
+  }
+};
+
+window.create = function () {
+  const id = document.getElementById("id").value;
+  const status = document.getElementById("status").value;
+  const location = document.getElementById("location").value;
+  const date = document.getElementById("date").value;
+
+  set(ref(db, "shipments/" + id), {
+    status: status,
+    location: location,
+    date: date
+  });
+
+  alert("Shipment created!");
+};
+</script>
+
+</body>
+</html>

@@ -1,31 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Panel</title>
+<title>Admin Login</title>
 <style>
 body {
-  background: #111;
+  background: #0b132b;
   color: white;
   font-family: Arial;
   text-align: center;
-  padding: 30px;
+  padding: 40px;
 }
+
 input, button {
   padding: 12px;
-  margin: 5px;
+  margin: 10px;
   border-radius: 8px;
   border: none;
 }
+
 button {
   background: green;
   color: white;
+  cursor: pointer;
+}
+
+#adminPanel {
+  display: none;
+  margin-top: 30px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🔐 Admin Panel</h1>
+<h1>🔐 Admin Login</h1>
+
+<input type="password" id="password" placeholder="Enter Password">
+<br>
+<button onclick="login()">Login</button>
+
+<div id="adminPanel">
+
+<h2>Admin Panel</h2>
 
 <input id="id" placeholder="Tracking ID"><br>
 <input id="status" placeholder="Status"><br>
@@ -37,27 +53,47 @@ button {
 
 <p id="msg"></p>
 
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, update, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const app = initializeApp({
+const firebaseConfig = {
   apiKey: "AIzaSyDCCeOgVmgMbF2KS2HF68",
   authDomain: "express-logistics-793a0.firebaseapp.com",
   databaseURL: "https://express-logistics-793a0-default-rtdb.firebaseio.com",
   projectId: "express-logistics-793a0"
-});
+};
 
+const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// 🔐 CHANGE THIS PASSWORD
+const ADMIN_PASSWORD = "1234";
+
+window.login = function() {
+  const input = document.getElementById("password").value;
+
+  if (input === ADMIN_PASSWORD) {
+    document.getElementById("adminPanel").style.display = "block";
+    document.getElementById("password").style.display = "none";
+  } else {
+    alert("Wrong password");
+  }
+};
+
+// CREATE SHIPMENT
 window.create = function() {
   const id = document.getElementById("id").value;
   const status = document.getElementById("status").value;
 
   set(ref(db, "shipments/" + id), { status });
-  document.getElementById("msg").innerHTML = "✅ Created";
+
+  document.getElementById("msg").innerHTML = "✅ Shipment Created";
 };
 
+// ADD UPDATE
 window.updateData = function() {
   const id = document.getElementById("id").value;
   const status = document.getElementById("status").value;
@@ -75,7 +111,7 @@ window.updateData = function() {
       location, status, date
     });
 
-    document.getElementById("msg").innerHTML = "✅ Updated";
+    document.getElementById("msg").innerHTML = "✅ Update Added";
   });
 };
 </script>

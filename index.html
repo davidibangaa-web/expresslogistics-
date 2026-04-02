@@ -8,8 +8,8 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial;
-    background: linear-gradient(135deg, #0a1a3a, #0f2a5c);
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0a1a3a, #122b5e);
     color: white;
 }
 
@@ -20,10 +20,10 @@ body {
 }
 
 .header h1 {
-    font-size: 32px;
+    font-size: 36px;
 }
 
-/* TRACK BOX */
+/* INPUT */
 .track-box {
     display: flex;
     justify-content: center;
@@ -33,24 +33,46 @@ body {
 input {
     padding: 15px;
     width: 60%;
-    border-radius: 10px;
+    border-radius: 12px;
     border: none;
 }
 
 button {
-    padding: 15px 20px;
+    padding: 15px 25px;
     margin-left: 10px;
     border: none;
-    border-radius: 10px;
-    background: #2ecc71;
+    border-radius: 12px;
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
     color: white;
     cursor: pointer;
 }
 
-/* RESULT */
+/* STATUS */
 .result {
     text-align: center;
     margin-top: 20px;
+    font-size: 18px;
+}
+
+/* PROGRESS BAR */
+.progress-container {
+    width: 80%;
+    margin: 30px auto;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #222;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00ffcc, #00ccff);
+    transition: 1s;
 }
 
 /* TIMELINE */
@@ -68,12 +90,13 @@ button {
     top: 0;
     width: 3px;
     height: 100%;
-    background: #aaa;
+    background: #888;
 }
 
 .event {
     margin-bottom: 30px;
     position: relative;
+    animation: fadeIn 0.5s ease forwards;
 }
 
 .event::before {
@@ -81,9 +104,9 @@ button {
     position: absolute;
     left: -22px;
     top: 5px;
-    width: 12px;
-    height: 12px;
-    background: #3498db;
+    width: 14px;
+    height: 14px;
+    background: #00ccff;
     border-radius: 50%;
 }
 
@@ -95,6 +118,11 @@ button {
 .event p {
     margin: 5px 0;
     color: #ccc;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
 }
 
 /* CONTACT */
@@ -126,16 +154,22 @@ button {
 
 <div class="result" id="result"></div>
 
+<!-- PROGRESS -->
+<div class="progress-container">
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+</div>
+
 <div class="timeline" id="timeline"></div>
 
 <div class="contact">
-    Contact us on Telegram 👉 
+    Contact us 👉 
     <a href="https://t.me/privatedeliveryagent001" target="_blank">
-        Click Here
+        Telegram Support
     </a>
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -150,6 +184,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+function getProgress(status) {
+    if (status.includes("Pending")) return 10;
+    if (status.includes("Processing")) return 30;
+    if (status.includes("Transit")) return 60;
+    if (status.includes("Delivery")) return 85;
+    if (status.includes("Delivered")) return 100;
+    return 20;
+}
+
 window.track = function () {
     const id = document.getElementById("trackId").value;
     const shipmentRef = ref(db, "shipments/" + id);
@@ -157,12 +200,17 @@ window.track = function () {
     get(shipmentRef).then((snapshot) => {
         const timelineDiv = document.getElementById("timeline");
         const resultDiv = document.getElementById("result");
+        const progressBar = document.getElementById("progress");
 
         timelineDiv.innerHTML = "";
 
         if (snapshot.exists()) {
             const data = snapshot.val();
-            resultDiv.innerHTML = "✅ Status: " + data.status;
+
+            resultDiv.innerHTML = "📦 Status: " + data.status;
+
+            let progressValue = getProgress(data.status);
+            progressBar.style.width = progressValue + "%";
 
             if (data.history) {
                 data.history.reverse().forEach(item => {
@@ -175,8 +223,10 @@ window.track = function () {
                     `;
                 });
             }
+
         } else {
             resultDiv.innerHTML = "❌ Tracking ID not found";
+            progressBar.style.width = "0%";
         }
     });
 };

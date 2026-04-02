@@ -3,113 +3,165 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel</title>
+<title>Admin Dashboard</title>
 
 <style>
 body {
-  margin: 0;
-  font-family: Arial;
-  background: #0a1a3a;
-  color: white;
-  text-align: center;
+    margin: 0;
+    font-family: Arial;
+    background: #0a1a3a;
+    color: white;
 }
 
-.container {
-  margin-top: 80px;
+/* LOGIN */
+.login {
+    text-align: center;
+    margin-top: 100px;
 }
 
 input {
-  padding: 12px;
-  width: 70%;
-  margin: 10px;
-  border-radius: 8px;
-  border: none;
+    padding: 12px;
+    margin: 10px;
+    width: 250px;
+    border-radius: 8px;
+    border: none;
 }
 
 button {
-  padding: 12px 20px;
-  background: #28a745;
-  border: none;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #2ecc71;
+    color: white;
+    cursor: pointer;
 }
 
-.hidden {
-  display: none;
+/* DASHBOARD */
+.dashboard {
+    display: none;
+    padding: 20px;
+}
+
+.card {
+    background: #111;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+h2 {
+    margin-top: 0;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-
 <!-- LOGIN -->
-<div id="login">
-  <h2>🔐 Admin Login</h2>
-  <input type="password" id="password" placeholder="Enter password">
-  <br>
-  <button onclick="login()">Login</button>
+<div class="login" id="loginBox">
+    <h2>🔐 Admin Login</h2>
+    <input type="password" id="password" placeholder="Enter password">
+    <br>
+    <button onclick="login()">Login</button>
 </div>
 
-<!-- PANEL -->
-<div id="panel" class="hidden">
-  <h2>📦 Admin Panel</h2>
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
 
-  <input id="id" placeholder="Tracking ID (ABC123)">
-  <input id="status" placeholder="Status (In transit)">
-  <input id="location" placeholder="Location">
-  <input id="date" placeholder="Date">
+    <h1>🚚 Express Logistics Admin</h1>
 
-  <br>
-  <button onclick="create()">Create Shipment</button>
+    <!-- CREATE SHIPMENT -->
+    <div class="card">
+        <h2>Create Shipment</h2>
+        <input id="newId" placeholder="Tracking ID (ABC123)">
+        <input id="newStatus" placeholder="Status (In Transit)">
+        <button onclick="createShipment()">Create</button>
+    </div>
+
+    <!-- UPDATE STATUS -->
+    <div class="card">
+        <h2>Update Status</h2>
+        <input id="updateId" placeholder="Tracking ID">
+        <input id="updateStatus" placeholder="New Status">
+        <button onclick="updateStatus()">Update</button>
+    </div>
+
+    <!-- ADD TIMELINE -->
+    <div class="card">
+        <h2>Add Timeline Update</h2>
+        <input id="timeId" placeholder="Tracking ID">
+        <input id="title" placeholder="Title (Arrived Facility)">
+        <input id="location" placeholder="Location">
+        <input id="date" placeholder="Date">
+        <button onclick="addTimeline()">Add Update</button>
+    </div>
+
 </div>
 
-</div>
-
-<!-- Firebase -->
+<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, set, update, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "express-logistics-793a0.firebaseapp.com",
-  databaseURL: "https://express-logistics-793a0-default-rtdb.firebaseio.com",
-  projectId: "express-logistics-793a0",
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://express-logistics-793a0-default-rtdb.firebaseio.com/",
+    projectId: "express-logistics-793a0"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// 🔐 PASSWORD (CHANGE THIS)
-const ADMIN_PASSWORD = "12345";
-
 window.login = function () {
-  const pass = document.getElementById("password").value;
+    const pass = document.getElementById("password").value;
 
-  if (pass === ADMIN_PASSWORD) {
-    document.getElementById("login").style.display = "none";
-    document.getElementById("panel").style.display = "block";
-  } else {
-    alert("Wrong password");
-  }
+    if (pass === "admin123") {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+    } else {
+        alert("Wrong password");
+    }
 };
 
-window.create = function () {
-  const id = document.getElementById("id").value;
-  const status = document.getElementById("status").value;
-  const location = document.getElementById("location").value;
-  const date = document.getElementById("date").value;
+// CREATE SHIPMENT
+window.createShipment = function () {
+    const id = document.getElementById("newId").value;
+    const status = document.getElementById("newStatus").value;
 
-  set(ref(db, "shipments/" + id), {
-    status: status,
-    location: location,
-    date: date
-  });
+    set(ref(db, "shipments/" + id), {
+        status: status
+    });
 
-  alert("Shipment created!");
+    alert("Shipment created!");
+};
+
+// UPDATE STATUS
+window.updateStatus = function () {
+    const id = document.getElementById("updateId").value;
+    const status = document.getElementById("updateStatus").value;
+
+    update(ref(db, "shipments/" + id), {
+        status: status
+    });
+
+    alert("Status updated!");
+};
+
+// ADD TIMELINE EVENT
+window.addTimeline = function () {
+    const id = document.getElementById("timeId").value;
+    const title = document.getElementById("title").value;
+    const location = document.getElementById("location").value;
+    const date = document.getElementById("date").value;
+
+    push(ref(db, "shipments/" + id + "/history"), {
+        title: title,
+        location: location,
+        date: date
+    });
+
+    alert("Timeline updated!");
 };
 </script>
 

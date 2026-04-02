@@ -1,236 +1,155 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Express Logistics</title>
+  <title>Express Logistics</title>
 
-<style>
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #0a1a3a, #122b5e);
-    color: white;
-}
+  <style>
+    body {
+      font-family: Arial;
+      background: linear-gradient(to right, #0a0f2c, #1c2b4a);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
 
-/* HEADER */
-.header {
-    text-align: center;
-    padding: 40px 20px;
-}
+    h1 {
+      font-size: 40px;
+    }
 
-.header h1 {
-    font-size: 36px;
-}
+    input {
+      padding: 15px;
+      width: 60%;
+      border-radius: 10px;
+      border: none;
+      margin-top: 20px;
+    }
 
-/* INPUT */
-.track-box {
-    display: flex;
-    justify-content: center;
-    margin: 20px;
-}
+    button {
+      padding: 15px 25px;
+      background: #4CAF50;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      margin-left: 10px;
+      cursor: pointer;
+    }
 
-input {
-    padding: 15px;
-    width: 60%;
-    border-radius: 12px;
-    border: none;
-}
+    /* TIMELINE STYLE */
+    .timeline {
+      max-width: 600px;
+      margin: 40px auto;
+      position: relative;
+      padding-left: 30px;
+    }
 
-button {
-    padding: 15px 25px;
-    margin-left: 10px;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(45deg, #2ecc71, #27ae60);
-    color: white;
-    cursor: pointer;
-}
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 0;
+      width: 3px;
+      height: 100%;
+      background: #2e3a59;
+    }
 
-/* STATUS */
-.result {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 18px;
-}
+    .timeline-item {
+      position: relative;
+      margin-bottom: 30px;
+    }
 
-/* PROGRESS BAR */
-.progress-container {
-    width: 80%;
-    margin: 30px auto;
-}
+    .timeline-dot {
+      position: absolute;
+      left: -2px;
+      width: 14px;
+      height: 14px;
+      background: #4CAF50;
+      border-radius: 50%;
+      top: 5px;
+    }
 
-.progress-bar {
-    width: 100%;
-    height: 12px;
-    background: #222;
-    border-radius: 10px;
-    overflow: hidden;
-}
+    .timeline-content {
+      background: rgba(255,255,255,0.05);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: left;
+    }
 
-.progress {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #00ffcc, #00ccff);
-    transition: 1s;
-}
+    .timeline-content h3 {
+      margin: 0;
+      color: #4CAF50;
+    }
 
-/* TIMELINE */
-.timeline {
-    max-width: 600px;
-    margin: 40px auto;
-    position: relative;
-    padding-left: 30px;
-}
-
-.timeline::before {
-    content: "";
-    position: absolute;
-    left: 10px;
-    top: 0;
-    width: 3px;
-    height: 100%;
-    background: #888;
-}
-
-.event {
-    margin-bottom: 30px;
-    position: relative;
-    animation: fadeIn 0.5s ease forwards;
-}
-
-.event::before {
-    content: "";
-    position: absolute;
-    left: -22px;
-    top: 5px;
-    width: 14px;
-    height: 14px;
-    background: #00ccff;
-    border-radius: 50%;
-}
-
-.event h3 {
-    margin: 0;
-    color: #4da3ff;
-}
-
-.event p {
-    margin: 5px 0;
-    color: #ccc;
-}
-
-@keyframes fadeIn {
-    from {opacity: 0; transform: translateY(10px);}
-    to {opacity: 1; transform: translateY(0);}
-}
-
-/* CONTACT */
-.contact {
-    text-align: center;
-    margin: 40px;
-}
-
-.contact a {
-    color: #2ecc71;
-    text-decoration: none;
-    font-weight: bold;
-}
-</style>
-
+    .timeline-content p {
+      margin: 5px 0;
+      color: #ccc;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="header">
-    <h1>🚚 Express Logistics</h1>
-    <p>Track Your Package in Real-Time</p>
-</div>
+  <h1>🚚 Express Logistics</h1>
+  <h2>Track Your Package in Real-Time</h2>
 
-<div class="track-box">
-    <input type="text" id="trackId" placeholder="Enter Tracking ID">
-    <button onclick="track()">Track</button>
-</div>
+  <input type="text" id="trackingInput" placeholder="Enter Tracking ID">
+  <button onclick="track()">Track</button>
 
-<div class="result" id="result"></div>
+  <div id="result"></div>
 
-<!-- PROGRESS -->
-<div class="progress-container">
-    <div class="progress-bar">
-        <div class="progress" id="progress"></div>
-    </div>
-</div>
+  <!-- FIREBASE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<div class="timeline" id="timeline"></div>
+    const firebaseConfig = {
+      apiKey: "PASTE_API_KEY",
+      authDomain: "PASTE_AUTH_DOMAIN",
+      databaseURL: "PASTE_DATABASE_URL",
+      projectId: "PASTE_PROJECT_ID",
+      storageBucket: "PASTE_STORAGE_BUCKET",
+      messagingSenderId: "PASTE_SENDER_ID",
+      appId: "PASTE_APP_ID"
+    };
 
-<div class="contact">
-    Contact us 👉 
-    <a href="https://t.me/privatedeliveryagent001" target="_blank">
-        Telegram Support
-    </a>
-</div>
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    window.track = function () {
+      const id = document.getElementById("trackingInput").value;
 
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://express-logistics-793a0-default-rtdb.firebaseio.com/",
-    projectId: "express-logistics-793a0"
-};
+      const shipmentRef = ref(db, "shipments/" + id);
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-function getProgress(status) {
-    if (status.includes("Pending")) return 10;
-    if (status.includes("Processing")) return 30;
-    if (status.includes("Transit")) return 60;
-    if (status.includes("Delivery")) return 85;
-    if (status.includes("Delivered")) return 100;
-    return 20;
-}
-
-window.track = function () {
-    const id = document.getElementById("trackId").value;
-    const shipmentRef = ref(db, "shipments/" + id);
-
-    get(shipmentRef).then((snapshot) => {
-        const timelineDiv = document.getElementById("timeline");
-        const resultDiv = document.getElementById("result");
-        const progressBar = document.getElementById("progress");
-
-        timelineDiv.innerHTML = "";
-
+      get(shipmentRef).then((snapshot) => {
         if (snapshot.exists()) {
-            const data = snapshot.val();
+          const data = snapshot.val();
+          const history = data.history;
 
-            resultDiv.innerHTML = "📦 Status: " + data.status;
+          let html = `<div class="timeline">`;
 
-            let progressValue = getProgress(data.status);
-            progressBar.style.width = progressValue + "%";
+          Object.values(history).reverse().forEach(item => {
+            html += `
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <h3>${item.status}</h3>
+                  <p>${item.location}</p>
+                  <p>${item.date}</p>
+                </div>
+              </div>
+            `;
+          });
 
-            if (data.history) {
-                data.history.reverse().forEach(item => {
-                    timelineDiv.innerHTML += `
-                        <div class="event">
-                            <h3>${item.title}</h3>
-                            <p>${item.location}</p>
-                            <p>${item.date}</p>
-                        </div>
-                    `;
-                });
-            }
+          html += `</div>`;
+
+          document.getElementById("result").innerHTML = html;
 
         } else {
-            resultDiv.innerHTML = "❌ Tracking ID not found";
-            progressBar.style.width = "0%";
+          document.getElementById("result").innerHTML =
+            "<p style='color:red;'>Tracking ID not found</p>";
         }
-    });
-};
-</script>
+      });
+    };
+  </script>
 
 </body>
 </html>

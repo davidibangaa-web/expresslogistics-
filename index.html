@@ -1,155 +1,159 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Express Logistics</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Express Logistics</title>
 
-  <style>
-    body {
-      font-family: Arial;
-      background: linear-gradient(to right, #0a0f2c, #1c2b4a);
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  text-align: center;
+}
 
-    h1 {
-      font-size: 40px;
-    }
+.container {
+  padding: 40px 20px;
+}
 
-    input {
-      padding: 15px;
-      width: 60%;
-      border-radius: 10px;
-      border: none;
-      margin-top: 20px;
-    }
+h1 {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
 
-    button {
-      padding: 15px 25px;
-      background: #4CAF50;
-      border: none;
-      border-radius: 10px;
-      color: white;
-      margin-left: 10px;
-      cursor: pointer;
-    }
+.subtitle {
+  color: #ccc;
+  margin-bottom: 30px;
+}
 
-    /* TIMELINE STYLE */
-    .timeline {
-      max-width: 600px;
-      margin: 40px auto;
-      position: relative;
-      padding-left: 30px;
-    }
+input {
+  padding: 15px;
+  width: 60%;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+}
 
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 10px;
-      top: 0;
-      width: 3px;
-      height: 100%;
-      background: #2e3a59;
-    }
+button {
+  padding: 15px 25px;
+  border: none;
+  border-radius: 10px;
+  background: #22c55e;
+  color: white;
+  font-weight: bold;
+  margin-left: 10px;
+  cursor: pointer;
+}
 
-    .timeline-item {
-      position: relative;
-      margin-bottom: 30px;
-    }
+button:hover {
+  background: #16a34a;
+}
 
-    .timeline-dot {
-      position: absolute;
-      left: -2px;
-      width: 14px;
-      height: 14px;
-      background: #4CAF50;
-      border-radius: 50%;
-      top: 5px;
-    }
+.timeline {
+  max-width: 500px;
+  margin: 40px auto;
+  text-align: left;
+}
 
-    .timeline-content {
-      background: rgba(255,255,255,0.05);
-      padding: 15px;
-      border-radius: 10px;
-      text-align: left;
-    }
+.timeline-item {
+  border-left: 3px solid #22c55e;
+  padding: 10px 20px;
+  margin: 20px 0;
+  position: relative;
+}
 
-    .timeline-content h3 {
-      margin: 0;
-      color: #4CAF50;
-    }
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 15px;
+  width: 15px;
+  height: 15px;
+  background: #22c55e;
+  border-radius: 50%;
+}
 
-    .timeline-content p {
-      margin: 5px 0;
-      color: #ccc;
-    }
-  </style>
+.status {
+  font-weight: bold;
+}
+
+.contact {
+  margin-top: 40px;
+}
+
+a {
+  color: #22c55e;
+}
+</style>
 </head>
 
 <body>
 
+<div class="container">
   <h1>🚚 Express Logistics</h1>
-  <h2>Track Your Package in Real-Time</h2>
+  <p class="subtitle">Track Your Package in Real-Time</p>
 
-  <input type="text" id="trackingInput" placeholder="Enter Tracking ID">
-  <button onclick="track()">Track</button>
+  <input id="trackingInput" placeholder="Enter Tracking ID">
+  <button onclick="trackPackage()">Track</button>
 
-  <div id="result"></div>
+  <div id="timeline" class="timeline"></div>
 
-  <!-- FIREBASE -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  <div class="contact">
+    <p>Contact us on Telegram:</p>
+    <a href="https://t.me/privatedeliveryagent001" target="_blank">
+      https://t.me/privatedeliveryagent001
+    </a>
+  </div>
+</div>
 
-    const firebaseConfig = {
-      apiKey: "PASTE_API_KEY",
-      authDomain: "PASTE_AUTH_DOMAIN",
-      databaseURL: "PASTE_DATABASE_URL",
-      projectId: "PASTE_PROJECT_ID",
-      storageBucket: "PASTE_STORAGE_BUCKET",
-      messagingSenderId: "PASTE_SENDER_ID",
-      appId: "PASTE_APP_ID"
-    };
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDCCeOgVmgMbF2KS2HF68hbqaO_-XDLn6A",
+  authDomain: "express-logistics-793a0.firebaseapp.com",
+  databaseURL: "https://express-logistics-793a0-default-rtdb.firebaseio.com",
+  projectId: "express-logistics-793a0",
+  storageBucket: "express-logistics-793a0.firebasestorage.app",
+  messagingSenderId: "405295804716",
+  appId: "1:405295804716:web:2ee889cab8a3cca4dd3c89",
+  measurementId: "G-YSGJPBK6Z1"
+};
 
-    window.track = function () {
-      const id = document.getElementById("trackingInput").value;
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-      const shipmentRef = ref(db, "shipments/" + id);
+function trackPackage() {
+  const id = document.getElementById("trackingInput").value.trim();
 
-      get(shipmentRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const history = data.history;
+  db.ref("shipments/" + id + "/updates").once("value", snapshot => {
+    const updates = snapshot.val();
 
-          let html = `<div class="timeline">`;
+    if (updates) {
+      let html = "";
 
-          Object.values(history).reverse().forEach(item => {
-            html += `
-              <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                  <h3>${item.status}</h3>
-                  <p>${item.location}</p>
-                  <p>${item.date}</p>
-                </div>
-              </div>
-            `;
-          });
-
-          html += `</div>`;
-
-          document.getElementById("result").innerHTML = html;
-
-        } else {
-          document.getElementById("result").innerHTML =
-            "<p style='color:red;'>Tracking ID not found</p>";
-        }
+      Object.values(updates).reverse().forEach(update => {
+        html += `
+          <div class="timeline-item">
+            <div class="status">${update.status}</div>
+            <div>${update.location}</div>
+            <small>${update.date}</small>
+          </div>
+        `;
       });
-    };
-  </script>
+
+      document.getElementById("timeline").innerHTML = html;
+    } else {
+      document.getElementById("timeline").innerHTML =
+        "<p style='color:red;'>❌ Tracking ID not found</p>";
+    }
+  });
+}
+</script>
 
 </body>
 </html>

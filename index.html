@@ -6,164 +6,133 @@
 <title>Express Logistics</title>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
-}
-
 body {
-  background: linear-gradient(135deg, #0a1a3a, #1a3c7a);
-  color: white;
+    margin: 0;
+    font-family: Arial;
+    background: linear-gradient(135deg, #0a1a3a, #0f2a5c);
+    color: white;
 }
 
 /* HEADER */
 .header {
-  padding: 20px;
-  text-align: center;
+    text-align: center;
+    padding: 40px 20px;
 }
 
 .header h1 {
-  font-size: 32px;
+    font-size: 32px;
 }
 
-/* HERO */
-.hero {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.hero h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #ccc;
-}
-
-/* INPUT */
+/* TRACK BOX */
 .track-box {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
+    display: flex;
+    justify-content: center;
+    margin: 20px;
 }
 
-.track-box input {
-  padding: 15px;
-  width: 300px;
-  border-radius: 10px;
-  border: none;
+input {
+    padding: 15px;
+    width: 60%;
+    border-radius: 10px;
+    border: none;
 }
 
-.track-box button {
-  padding: 15px 25px;
-  background: #28a745;
-  border: none;
-  border-radius: 10px;
-  color: white;
-  cursor: pointer;
+button {
+    padding: 15px 20px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 10px;
+    background: #2ecc71;
+    color: white;
+    cursor: pointer;
 }
 
-/* RESULT CARD */
-.result-card {
-  margin: 30px auto;
-  width: 90%;
-  max-width: 500px;
-  background: rgba(255,255,255,0.08);
-  padding: 20px;
-  border-radius: 15px;
-  display: none;
-}
-
-/* PROGRESS BAR */
-.progress-bar {
-  height: 8px;
-  background: #444;
-  border-radius: 10px;
-  margin: 20px 0;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  width: 0%;
-  background: #28a745;
-  transition: 0.5s;
+/* RESULT */
+.result {
+    text-align: center;
+    margin-top: 20px;
 }
 
 /* TIMELINE */
 .timeline {
-  text-align: left;
-  margin-top: 15px;
+    max-width: 600px;
+    margin: 40px auto;
+    position: relative;
+    padding-left: 30px;
 }
 
-.timeline p {
-  margin: 5px 0;
-  font-size: 14px;
+.timeline::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: #aaa;
 }
 
-/* TELEGRAM BUTTON */
+.event {
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.event::before {
+    content: "";
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    background: #3498db;
+    border-radius: 50%;
+}
+
+.event h3 {
+    margin: 0;
+    color: #4da3ff;
+}
+
+.event p {
+    margin: 5px 0;
+    color: #ccc;
+}
+
+/* CONTACT */
 .contact {
-  text-align: center;
-  margin: 40px 0;
+    text-align: center;
+    margin: 40px;
 }
 
 .contact a {
-  background: #0088cc;
-  padding: 15px 25px;
-  color: white;
-  border-radius: 10px;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-/* FOOTER */
-.footer {
-  text-align: center;
-  padding: 20px;
-  color: #aaa;
+    color: #2ecc71;
+    text-decoration: none;
+    font-weight: bold;
 }
 </style>
+
 </head>
 
 <body>
 
 <div class="header">
-  🚚 <h1>Express Logistics</h1>
+    <h1>🚚 Express Logistics</h1>
+    <p>Track Your Package in Real-Time</p>
 </div>
 
-<div class="hero">
-  <h2>Track Your Package in Real-Time</h2>
-
-  <div class="track-box">
-    <input id="trackId" placeholder="Enter Tracking ID">
+<div class="track-box">
+    <input type="text" id="trackId" placeholder="Enter Tracking ID">
     <button onclick="track()">Track</button>
-  </div>
 </div>
 
-<!-- RESULT -->
-<div class="result-card" id="card">
-  <h3 id="status"></h3>
+<div class="result" id="result"></div>
 
-  <div class="progress-bar">
-    <div class="progress-fill" id="progress"></div>
-  </div>
+<div class="timeline" id="timeline"></div>
 
-  <div class="timeline">
-    <p id="location"></p>
-    <p id="date"></p>
-  </div>
-</div>
-
-<!-- CONTACT -->
 <div class="contact">
-  <a href="https://t.me/privatedeliveryagent001" target="_blank">
-    💬 Contact us on Telegram
-  </a>
-</div>
-
-<div class="footer">
-  © 2026 Express Logistics. All rights reserved.
+    Contact us on Telegram 👉 
+    <a href="https://t.me/privatedeliveryagent001" target="_blank">
+        Click Here
+    </a>
 </div>
 
 <!-- FIREBASE -->
@@ -172,46 +141,45 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "express-logistics-793a0.firebaseapp.com",
-  databaseURL: "https://express-logistics-793a0-default-rtdb.firebaseio.com",
-  projectId: "express-logistics-793a0",
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://express-logistics-793a0-default-rtdb.firebaseio.com/",
+    projectId: "express-logistics-793a0"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 window.track = function () {
-  const id = document.getElementById("trackId").value;
-  const shipmentRef = ref(db, "shipments/" + id);
+    const id = document.getElementById("trackId").value;
+    const shipmentRef = ref(db, "shipments/" + id);
 
-  get(shipmentRef).then((snap) => {
-    if (snap.exists()) {
-      const data = snap.val();
+    get(shipmentRef).then((snapshot) => {
+        const timelineDiv = document.getElementById("timeline");
+        const resultDiv = document.getElementById("result");
 
-      document.getElementById("card").style.display = "block";
-      document.getElementById("status").innerHTML = "📦 " + data.status;
-      document.getElementById("location").innerHTML = "📍 " + data.location;
-      document.getElementById("date").innerHTML = "📅 " + data.date;
+        timelineDiv.innerHTML = "";
 
-      updateProgress(data.status);
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            resultDiv.innerHTML = "✅ Status: " + data.status;
 
-    } else {
-      alert("Tracking ID not found");
-    }
-  });
+            if (data.history) {
+                data.history.reverse().forEach(item => {
+                    timelineDiv.innerHTML += `
+                        <div class="event">
+                            <h3>${item.title}</h3>
+                            <p>${item.location}</p>
+                            <p>${item.date}</p>
+                        </div>
+                    `;
+                });
+            }
+        } else {
+            resultDiv.innerHTML = "❌ Tracking ID not found";
+        }
+    });
 };
-
-function updateProgress(status) {
-  let progress = 0;
-
-  if (status === "Processed") progress = 25;
-  if (status === "Shipped") progress = 50;
-  if (status === "In transit") progress = 75;
-  if (status === "Delivered") progress = 100;
-
-  document.getElementById("progress").style.width = progress + "%";
-}
 </script>
 
 </body>

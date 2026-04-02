@@ -9,147 +9,119 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
+  background: #0b0f1a;
   color: white;
+}
+
+header {
+  background: #0f172a;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.hero {
+  text-align: center;
+  padding: 50px 20px;
+  background: linear-gradient(135deg, #0ea5e9, #1e293b);
+}
+
+.track-box {
+  padding: 20px;
   text-align: center;
 }
 
-.container {
-  padding: 40px 20px;
-}
-
-h1 {
-  font-size: 40px;
-  margin-bottom: 10px;
-}
-
-.subtitle {
-  color: #ccc;
-  margin-bottom: 30px;
-}
-
 input {
-  padding: 15px;
-  width: 60%;
-  border-radius: 10px;
+  padding: 12px;
+  width: 80%;
+  border-radius: 6px;
   border: none;
-  outline: none;
 }
 
 button {
-  padding: 15px 25px;
+  padding: 12px;
+  margin-top: 10px;
+  background: #38bdf8;
   border: none;
-  border-radius: 10px;
-  background: #22c55e;
   color: white;
-  font-weight: bold;
-  margin-left: 10px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #16a34a;
-}
-
-.timeline {
-  max-width: 500px;
-  margin: 40px auto;
-  text-align: left;
-}
-
-.timeline-item {
-  border-left: 3px solid #22c55e;
-  padding: 10px 20px;
-  margin: 20px 0;
-  position: relative;
-}
-
-.timeline-item::before {
-  content: '';
-  position: absolute;
-  left: -8px;
-  top: 15px;
-  width: 15px;
-  height: 15px;
-  background: #22c55e;
-  border-radius: 50%;
+  border-radius: 6px;
 }
 
 .status {
-  font-weight: bold;
-}
-
-.contact {
-  margin-top: 40px;
-}
-
-a {
-  color: #22c55e;
+  margin: 20px;
+  padding: 20px;
+  background: #111827;
+  border-radius: 10px;
+  display: none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h1>🚚 Express Logistics</h1>
-  <p class="subtitle">Track Your Package in Real-Time</p>
+<header>
+  <div>☰</div>
+  <div>Express Logistics</div>
+  <div>🔔</div>
+</header>
 
-  <input id="trackingInput" placeholder="Enter Tracking ID">
-  <button onclick="trackPackage()">Track</button>
-
-  <div id="timeline" class="timeline"></div>
-
-  <div class="contact">
-    <p>Contact us on Telegram:</p>
-    <a href="https://t.me/privatedeliveryagent001" target="_blank">
-      https://t.me/privatedeliveryagent001
-    </a>
-  </div>
+<div class="hero">
+  <h1>Track Your Shipment</h1>
+  <p>Real-time delivery tracking</p>
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<div class="track-box">
+  <input id="trackInput" placeholder="Enter Tracking Number">
+  <br>
+  <button onclick="track()">Track</button>
+</div>
+
+<div id="result" class="status"></div>
+
+<!-- 🔥 FIREBASE SCRIPTS -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <script>
+/* 🔥 PASTE YOUR FIREBASE CONFIG HERE */
 const firebaseConfig = {
-  apiKey: "AIzaSyDCCeOgVmgMbF2KS2HF68hbqaO_-XDLn6A",
-  authDomain: "express-logistics-793a0.firebaseapp.com",
-  databaseURL: "https://express-logistics-793a0-default-rtdb.firebaseio.com",
-  projectId: "express-logistics-793a0",
-  storageBucket: "express-logistics-793a0.firebasestorage.app",
-  messagingSenderId: "405295804716",
-  appId: "1:405295804716:web:2ee889cab8a3cca4dd3c89",
-  measurementId: "G-YSGJPBK6Z1"
+  apiKey: "PASTE",
+  authDomain: "PASTE",
+  databaseURL: "PASTE",
+  projectId: "PASTE",
+  storageBucket: "PASTE",
+  messagingSenderId: "PASTE",
+  appId: "PASTE"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-function trackPackage() {
-  const id = document.getElementById("trackingInput").value.trim();
+/* 🔥 TRACK FUNCTION */
+function track() {
+  const input = document.getElementById("trackInput").value;
+  const result = document.getElementById("result");
 
-  db.ref("shipments/" + id + "/updates").once("value", snapshot => {
-    const updates = snapshot.val();
+  if(input === "") {
+    alert("Enter tracking number");
+    return;
+  }
 
-    if (updates) {
-      let html = "";
+  db.ref("shipments/" + input).once("value")
+  .then(snapshot => {
+    if(snapshot.exists()) {
+      const data = snapshot.val();
 
-      Object.values(updates).reverse().forEach(update => {
-        html += `
-          <div class="timeline-item">
-            <div class="status">${update.status}</div>
-            <div>${update.location}</div>
-            <small>${update.date}</small>
-          </div>
-        `;
-      });
-
-      document.getElementById("timeline").innerHTML = html;
+      result.style.display = "block";
+      result.innerHTML = `
+        <h3>Tracking ID: ${input}</h3>
+        <p>Status: ${data.status}</p>
+        <p>Location: ${data.location}</p>
+        <p>ETA: ${data.eta}</p>
+      `;
     } else {
-      document.getElementById("timeline").innerHTML =
-        "<p style='color:red;'>❌ Tracking ID not found</p>";
+      result.style.display = "block";
+      result.innerHTML = `<p>Tracking not found</p>`;
     }
   });
 }

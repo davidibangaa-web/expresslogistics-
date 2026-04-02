@@ -3,56 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Express Logistics PRO</title>
+<title>Express Logistics</title>
 
 <style>
 body {
   margin: 0;
-  font-family: Arial;
-  background: #0b132b;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #0b132b, #1c2541);
   color: white;
-}
-
-.container {
-  padding: 20px;
   text-align: center;
 }
 
-input, button {
-  padding: 12px;
-  margin: 5px;
-  border-radius: 8px;
+.container {
+  padding: 60px 20px;
+}
+
+h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+h2 {
+  opacity: 0.8;
+  margin-bottom: 30px;
+}
+
+.input-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+input {
+  padding: 15px;
+  width: 60%;
+  max-width: 320px;
+  border-radius: 10px;
   border: none;
+  outline: none;
 }
 
 button {
-  background: green;
+  padding: 15px 25px;
+  background: linear-gradient(45deg, #28a745, #3ddc84);
   color: white;
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+#result {
+  margin-top: 20px;
+  font-size: 18px;
 }
 
 .timeline {
   max-width: 500px;
-  margin: auto;
-  margin-top: 20px;
+  margin: 30px auto;
   text-align: left;
 }
 
 .event {
-  background: #1c2541;
-  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  padding: 15px;
   margin-bottom: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
+  border-left: 4px solid #3ddc84;
+  animation: fadeIn 0.5s ease;
 }
 
-.admin {
-  margin-top: 40px;
-  background: #111;
-  padding: 20px;
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(10px);}
+  to {opacity: 1; transform: translateY(0);}
 }
 
-h2 {
-  margin-top: 30px;
+.loader {
+  margin-top: 20px;
+  display: none;
+}
+
+.loader div {
+  width: 10px;
+  height: 10px;
+  margin: 3px;
+  background: white;
+  border-radius: 50%;
+  display: inline-block;
+  animation: bounce 1s infinite alternate;
+}
+
+.loader div:nth-child(2) { animation-delay: 0.2s; }
+.loader div:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  to { transform: translateY(-10px); }
 }
 </style>
 </head>
@@ -60,117 +109,74 @@ h2 {
 <body>
 
 <div class="container">
+  <h1>🚚 Express Logistics</h1>
+  <h2>Track Your Package in Real-Time</h2>
 
-<h1>🚚 Express Logistics</h1>
+  <div class="input-box">
+    <input id="trackId" placeholder="Enter Tracking ID">
+    <button onclick="track()">Track</button>
+  </div>
 
-<!-- USER TRACKING -->
-<h2>Track Package</h2>
-<input id="trackId" placeholder="Tracking ID">
-<button onclick="track()">Track</button>
+  <div class="loader" id="loader">
+    <div></div><div></div><div></div>
+  </div>
 
-<div id="result"></div>
-<div id="timeline" class="timeline"></div>
-
-<!-- ADMIN PANEL -->
-<div class="admin">
-<h2>Admin Panel</h2>
-
-<input id="adminId" placeholder="Tracking ID (e.g ABC123)">
-<input id="adminStatus" placeholder="Status (In transit)">
-<input id="adminLocation" placeholder="Location">
-<input id="adminDate" placeholder="Date">
-
-<button onclick="addShipment()">Create Shipment</button>
-<button onclick="addUpdate()">Add Update</button>
-
-<div id="adminMsg"></div>
-</div>
-
+  <div id="result"></div>
+  <div id="timeline" class="timeline"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDCCeOgVmgMbF2KS2HF68",
   authDomain: "express-logistics-793a0.firebaseapp.com",
   databaseURL: "https://express-logistics-793a0-default-rtdb.firebaseio.com",
-  projectId: "express-logistics-793a0",
-  storageBucket: "express-logistics-793a0.appspot.com",
-  messagingSenderId: "405295804716",
-  appId: "1:405295804716:web:2ee889cab",
+  projectId: "express-logistics-793a0"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// TRACK
 window.track = function () {
   const id = document.getElementById("trackId").value;
   const shipmentRef = ref(db, "shipments/" + id);
 
-  get(shipmentRef).then(snapshot => {
-    const result = document.getElementById("result");
-    const timeline = document.getElementById("timeline");
-    timeline.innerHTML = "";
+  const loader = document.getElementById("loader");
+  const result = document.getElementById("result");
+  const timeline = document.getElementById("timeline");
 
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      result.innerHTML = "✅ " + data.status;
+  loader.style.display = "block";
+  result.innerHTML = "";
+  timeline.innerHTML = "";
 
-      if (data.history) {
-        Object.values(data.history).forEach(item => {
-          const div = document.createElement("div");
-          div.className = "event";
-          div.innerHTML = `${item.location}<br>${item.status}<br><small>${item.date}</small>`;
-          timeline.appendChild(div);
-        });
+  setTimeout(() => {
+    get(shipmentRef).then(snapshot => {
+      loader.style.display = "none";
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        result.innerHTML = "✅ " + data.status;
+
+        if (data.history) {
+          Object.values(data.history).forEach(item => {
+            const div = document.createElement("div");
+            div.className = "event";
+            div.innerHTML = `
+              <strong>${item.location}</strong><br>
+              ${item.status}<br>
+              <small>${item.date}</small>
+            `;
+            timeline.appendChild(div);
+          });
+        }
+
+      } else {
+        result.innerHTML = "❌ Tracking ID not found";
       }
-    } else {
-      result.innerHTML = "❌ Not found";
-    }
-  });
-};
-
-// CREATE SHIPMENT
-window.addShipment = function () {
-  const id = document.getElementById("adminId").value;
-  const status = document.getElementById("adminStatus").value;
-
-  set(ref(db, "shipments/" + id), {
-    status: status
-  });
-
-  document.getElementById("adminMsg").innerHTML = "✅ Shipment Created";
-};
-
-// ADD UPDATE
-window.addUpdate = function () {
-  const id = document.getElementById("adminId").value;
-  const location = document.getElementById("adminLocation").value;
-  const status = document.getElementById("adminStatus").value;
-  const date = document.getElementById("adminDate").value;
-
-  const newUpdate = {
-    location: location,
-    status: status,
-    date: date
-  };
-
-  const shipmentRef = ref(db, "shipments/" + id + "/history");
-
-  get(shipmentRef).then(snapshot => {
-    let count = snapshot.exists() ? Object.keys(snapshot.val()).length + 1 : 1;
-
-    update(ref(db, "shipments/" + id), {
-      status: status
     });
-
-    set(ref(db, "shipments/" + id + "/history/" + count), newUpdate);
-
-    document.getElementById("adminMsg").innerHTML = "✅ Update Added";
-  });
+  }, 800);
 };
 </script>
 
